@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from 'react-dom';
 
+const { ipcRenderer } = window.require('electron');
+
 class App extends React.Component {
 
   constructor(props) {
@@ -18,6 +20,48 @@ class App extends React.Component {
     const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
     return `${minutes}:${remainingSeconds}`;
   };
+
+  startTimer = () => {
+    const { status, timer } = this.state;
+
+    if (status === 'off' || status === 'reset') {
+      clearInterval(timer);
+
+      this.setState({
+        status: 'work',
+        time: 20 * 60, // Set the time to 20 minutes in seconds
+      });
+
+      const newTimer = setInterval(() => {
+        this.setState((prevState) => ({
+          time: prevState.time - 1,
+        }), () => {
+          if (this.state.time === 0) {
+            this.setState((prevState) => ({
+              status: prevState.status === 'work' ? 'rest' : 'work',
+              time: prevState.status === 'work' ? 12 * 60 : 20,
+            }));
+          }
+        });
+      }, 1000);
+
+      this.setState({ timer: newTimer });
+    }
+  };
+
+  stopTimer = () => {
+    clearInterval(this.state.timer);
+    this.setState({
+      status: 'off',
+      time: 0,
+      timer: null,
+    });
+  };
+
+  closeApp() {
+    window.close()
+  }
+
 
   render() {
 
@@ -44,9 +88,9 @@ class App extends React.Component {
             {this.formatTime(time)}
           </div>
         )}
-        {showStartButton && <button className="btn">Start</button>}
-        {showStopButton && <button className="btn">Stop</button>}
-        <button className="btn btn-close">X</button>
+        {showStartButton && <button className="btn" onClick={this.startTimer}>Start</button>}
+        {showStopButton && <button className="btn" onClick={this.stopTimer}>Stop</button>}
+        <button className="btn btn-close" onClick={this.closeApp}>X</button>
       </div>
     )
   }
