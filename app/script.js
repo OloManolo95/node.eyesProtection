@@ -1,8 +1,6 @@
 import React from 'react';
 import { render } from 'react-dom';
 
-const { ipcRenderer } = window.require('electron');
-
 class App extends React.Component {
 
   constructor(props) {
@@ -37,6 +35,7 @@ class App extends React.Component {
           time: prevState.time - 1,
         }), () => {
           if (this.state.time === 0) {
+            this.playBell(); // Call the playBell function
             this.setState((prevState) => ({
               status: prevState.status === 'work' ? 'rest' : 'work',
               time: prevState.status === 'work' ? 12 * 60 : 20,
@@ -62,6 +61,10 @@ class App extends React.Component {
     window.close()
   }
 
+  playBell = () => {
+    const bell = new Audio('./sounds/bell.wav');
+    bell.play();
+  };
 
   render() {
 
